@@ -5,6 +5,7 @@ class GlobalTextForm extends StatelessWidget {
   String hint;
   TextInputType? textInputType;
   TextEditingController controller;
+  void Function(String)? onChanged;
 
   GlobalTextForm({
     super.key,
@@ -12,11 +13,13 @@ class GlobalTextForm extends StatelessWidget {
     this.textInputType,
     required this.hint,
     required this.controller,
+    this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      onChanged:onChanged,
       keyboardType: textInputType,
       controller: controller,
       enabled: enabled,
