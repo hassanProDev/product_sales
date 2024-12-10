@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -24,14 +24,16 @@ void main() async {
     return "";
   }
 
-  androidId= await getDeviceId();
+  androidId = await getDeviceId();
   print(androidId);
   await Hive.initFlutter();
   await Hive.openBox("data");
-  if(androidId=="UP1A.231005.007"){
+  if (androidId == "UP1A.231005.007") {
     runApp(MyApp());
-  }else{
-    runApp(MaterialApp(home: Scaffold(),));
+  } else {
+    runApp(MaterialApp(
+      home: Scaffold(),
+    ));
   }
 }
 
@@ -45,15 +47,15 @@ class MyApp extends StatelessWidget {
         create: (BuildContext context) {
           return AccessoryController();
         },
-        child:  MaterialApp(
-            debugShowCheckedModeBanner: false,
-            initialRoute: MainScreen.mainScreen,
-            routes: {
-              MainScreen.mainScreen: (_) => MainScreen(),
-              AddScreen.addScreen: (_) => AddScreen(),
-              UpdateScreen.updateScreen: (_) => UpdateScreen(),
-              ViewItem.viewItem: (_) => ViewItem(),
-            },
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          initialRoute: MainScreen.mainScreen,
+          routes: {
+            MainScreen.mainScreen: (_) => MainScreen(),
+            AddScreen.addScreen: (_) => AddScreen(),
+            UpdateScreen.updateScreen: (_) => UpdateScreen(),
+            ViewItem.viewItem: (_) => ViewItem(),
+          },
         ),
       ),
     );
@@ -66,13 +68,31 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AccessoryController prov =Provider.of<AccessoryController>(context);
-  List<AccessoryModel> list = prov.getAllData().where((e) => e.name.contains(controller.text)).toList();
-  
+    AccessoryController prov = Provider.of<AccessoryController>(context);
+    List<AccessoryModel> list = prov
+        .getAllData()
+        .where((e) => e.name.contains(controller.text))
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text("محمد الساحر"),
         centerTitle: true,
+      ),
+      drawer: Column(
+        children: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              Navigator.pop(context);
+              prov.deleteWithQr(context);
+            },
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
@@ -95,13 +115,31 @@ class MainScreen extends StatelessWidget {
               child: ListView.builder(
                   itemCount: list.length,
                   itemBuilder: (context, index) {
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25)),
-                      child: ListTile(
-                        title: Text(list[index].name),
-                        subtitle: Text(list[index].id),
-                        trailing: Text(list[index].price.toString()),
+                    return Slidable(
+                      key: const ValueKey(0),
+                      startActionPane: ActionPane(
+                        motion: const ScrollMotion(),
+                        dismissible: DismissiblePane(onDismissed: () {}),
+                        children: [
+                          SlidableAction(
+                            onPressed: (context) {
+                              prov.deleteById(list[index].id);
+                            },
+                            backgroundColor: const Color(0xFFFE4A49),
+                            foregroundColor: Colors.white,
+                            icon: Icons.delete,
+                            label: 'Delete',
+                          ),
+                        ],
+                      ),
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25)),
+                        child: ListTile(
+                          title: Text(list[index].name),
+                          subtitle: Text(list[index].id),
+                          trailing: Text(list[index].price.toString()),
+                        ),
                       ),
                     );
                   }),

@@ -30,20 +30,40 @@ class AccessoryController with ChangeNotifier {
       }
 
       if (nav == UpdateScreen.updateScreen) {
-        print(getData(res));
         if (getData(res).price!=-1) {
           Navigator.pushNamed(context, nav, arguments: getData(res));
         }
       }
       if (nav == ViewItem.viewItem) {
         if (getData(res).price!=-1) {
-          print(getData(res));
           Navigator.pushNamed(context, nav, arguments: getData(res));
         }
       }
     }
   }
 
+  void deleteById(String id){
+    List list=Hive.box("data").get(_accessoryKey);
+    list.map((e)=>AccessoryModel.fromJson(e)).toList().removeWhere((e)=>e.id==id);
+    notifyListeners();
+  }
+
+  void deleteWithQr(BuildContext context)async{
+    String? res = await SimpleBarcodeScanner.scanBarcode(
+      context,
+      barcodeAppBar: const BarcodeAppBar(
+        appBarTitle: 'Test',
+        centerTitle: false,
+        enableBackButton: true,
+      ),
+      isShowFlashIcon: true,
+      delayMillis: 2000,
+      cameraFace: CameraFace.back,
+    );
+    if(res!=null){
+      deleteById(res);
+    }
+  }
   void searchLissener() {
     notifyListeners();
   }
