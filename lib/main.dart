@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:zoza_phone/controller/accessory_controller.dart';
 import 'package:zoza_phone/model/model.dart';
 import 'package:zoza_phone/view/add_screen.dart';
+import 'package:zoza_phone/view/generate_qr.dart';
+import 'package:zoza_phone/view/main_screen/main_srceen.dart';
 import 'package:zoza_phone/view/update_screen.dart';
 import 'package:zoza_phone/view/view_item.dart';
 import 'package:zoza_phone/view/widget/global_text_form.dart';
@@ -55,6 +57,7 @@ class MyApp extends StatelessWidget {
             AddScreen.addScreen: (_) => AddScreen(),
             UpdateScreen.updateScreen: (_) => UpdateScreen(),
             ViewItem.viewItem: (_) => ViewItem(),
+            ProductQRGeneratorScreen.productQrScreen: (_) => ProductQRGeneratorScreen(),
           },
         ),
       ),
@@ -62,127 +65,3 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MainScreen extends StatelessWidget {
-  static const String mainScreen = "mainScreen";
-  TextEditingController controller = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    AccessoryController prov = Provider.of<AccessoryController>(context);
-    List<AccessoryModel> list = prov
-        .getAllData()
-        .where((e) => e.name.contains(controller.text))
-        .toList();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("محمد الساحر"),
-        centerTitle: true,
-      ),
-      drawer: Column(
-        children: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              Navigator.pop(context);
-              prov.deleteWithQr(context);
-            },
-            child: Text(
-              "Delete",
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(18.0),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 20,
-            ),
-            GlobalTextForm(
-              hint: "Search",
-              controller: controller,
-              onChanged: (v) {
-                prov.searchLissener();
-              },
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Expanded(
-              child: ListView.builder(
-                  itemCount: list.length,
-                  itemBuilder: (context, index) {
-                    return Slidable(
-                      key: const ValueKey(0),
-                      startActionPane: ActionPane(
-                        motion: const ScrollMotion(),
-                        dismissible: DismissiblePane(onDismissed: () {}),
-                        children: [
-                          SlidableAction(
-                            onPressed: (context) {
-                              prov.deleteById(list[index].id);
-                            },
-                            backgroundColor: const Color(0xFFFE4A49),
-                            foregroundColor: Colors.white,
-                            icon: Icons.delete,
-                            label: 'Delete',
-                          ),
-                        ],
-                      ),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25)),
-                        child: ListTile(
-                          title: Text(list[index].name),
-                          subtitle: Text(list[index].id),
-                          trailing: Text(list[index].price.toString()),
-                        ),
-                      ),
-                    );
-                  }),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          prov.scannerQr(AddScreen.addScreen, context);
-        },
-        child: Icon(Icons.add),
-      ),
-      bottomNavigationBar: BottomAppBar(
-          child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          ElevatedButton(
-            onPressed: () {
-              prov.scannerQr(UpdateScreen.updateScreen, context);
-            },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.change_circle_outlined),
-                Text("Update"),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              prov.scannerQr(ViewItem.viewItem, context);
-            },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.document_scanner_outlined),
-                Text("Scann"),
-              ],
-            ),
-          ),
-        ],
-      )),
-    );
-  }
-}
